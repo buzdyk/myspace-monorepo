@@ -1,2 +1,4 @@
 backend/.env
 .idea
+frontend/node_modules/
+frontend/.next/
