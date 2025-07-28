@@ -2,18 +2,33 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import Navigation from '@/components/Navigation'
+import { hoursToString, formatMoney } from '@/lib/helpers'
 import api from '@/lib/api'
 
 interface CalendarDay {
-  day: number | null
+  date: number | null
   hours: number | null
+  link?: string
+  isToday?: boolean
 }
 
 interface CalendarData {
   year: number
   month: number
   days: CalendarDay[]
+  hours: number
+  links: {
+    caption: string
+    thisLink: string
+    prevLink: string
+    nextLink: string
+  }
+  dailyGoal: number
+  hourlyRate: number
 }
+
+const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export default function CalendarPage() {
   const params = useParams()
@@ -39,73 +54,87 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading...</div>
+      <div className="h-screen w-full flex justify-center items-center font-mono text-2xl selection:bg-red-700 selection:text-white">
+        <div>Loading...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-red-600">{error}</div>
+      <div className="h-screen w-full flex justify-center items-center font-mono text-2xl selection:bg-red-700 selection:text-white">
+        <div>{error}</div>
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">No data available</div>
+      <div className="h-screen w-full flex justify-center items-center font-mono text-2xl selection:bg-red-700 selection:text-white">
+        <div>No data available</div>
       </div>
     )
   }
 
-  const monthName = new Date(data.year, data.month - 1).toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  })
-
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  
-  const weeks = []
-  for (let i = 0; i < data.days.length; i += 7) {
-    weeks.push(data.days.slice(i, i + 7))
-  }
-
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Calendar - {monthName}</h1>
+    <div className="h-screen w-full flex justify-center items-center font-mono text-2xl selection:bg-red-700 selection:text-white">
+      <div className="relative">
+        <div className="flex justify-start text-xs -ml-1">
+          <a href={`${data.links.thisLink}/projects`} className="block pl-1 pr-3 py-1 mr-4 hover:bg-gray-700 text-center text-gray-400">
+            Projects
+          </a>
+          <a href={`${data.links.thisLink}/calendar`} className="block pl-1 pr-3 py-1 ml-4 bg-gray-700 text-center text-gray-400">
+            Calendar
+          </a>
+        </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="grid grid-cols-7 gap-1">
-          {weekdays.map(day => (
-            <div key={day} className="p-3 text-center font-semibold text-gray-600 border-b">
-              {day}
-            </div>
-          ))}
-          
-          {data.days.map((day, index) => (
-            <div 
-              key={index} 
-              className={`p-3 min-h-[80px] border border-gray-200 ${
-                day.day ? 'bg-white hover:bg-gray-50' : 'bg-gray-100'
-              }`}
-            >
-              {day.day && (
-                <>
-                  <div className="font-medium text-gray-800">{day.day}</div>
-                  {day.hours !== null && (
-                    <div className="text-sm text-blue-600 mt-1">
-                      {day.hours.toFixed(1)}h
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
+        <div className="mt-10 mb-20">
+          <div className="grid grid-cols-7 gap-y-3 gap-x-3 text-center">
+            {daysOfWeek.map((day, index) => (
+              <div key={index} className="text-left font-bold text-gray-400 text-sm">
+                {day}
+              </div>
+            ))}
+
+            <div className="col-span-7 border-b border-b-gray-700"></div>
+
+            {data.days.map((day, index) => (
+              <div key={index} className="group relative w-16">
+                {day && (
+                  <div className="text-gray-500 text-left text-xs">
+                    <a 
+                      href={day.link} 
+                      className={day.isToday ? 'border-b border-b-red-600' : ''}
+                    >
+                      {day.date}
+                    </a>
+                  </div>
+                )}
+
+                {day && day.hours && (
+                  <div className="flex w-16 cursor-none justify-start mt-2 text-sm">
+                    <div className="group-hover:hidden">{hoursToString(day.hours)}</div>
+                    <div className="group-hover:block hidden">{formatMoney(day.hours * data.hourlyRate)}</div>
+                  </div>
+                )}
+
+                {(!day || !day.hours) && <div className="mt-2">&nbsp;</div>}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
+      <Navigation active="month">
+        <div className="mb-6 text-base flex justify-around">
+          <div className="flex justify-around">
+            <span className="block text-gray-400">{data.links.caption}</span>
+
+            <a href={`${data.links.prevLink}/calendar`} className="ml-3 text-gray-600 hover:text-gray-200">&lt;</a>
+            <a href={`${data.links.nextLink}/calendar`} className="ml-1 text-gray-600 hover:text-gray-200">&gt;</a>
+          </div>
+        </div>
+      </Navigation>
     </div>
   )
 }

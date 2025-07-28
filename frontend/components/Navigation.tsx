@@ -3,46 +3,41 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export default function Navigation() {
-  const pathname = usePathname()
-  
-  const isActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path)
-  }
-  
+interface NavigationProps {
+  active: string | null
+  children: React.ReactNode
+}
+
+export default function Navigation({ active, children }: NavigationProps) {
+  const pages = [
+    { path: 'today', caption: 'Today' },
+    { path: 'month', caption: 'Month' },
+    { path: 'settings', caption: 'Settings' },
+  ]
+
   return (
-    <nav className="bg-white shadow-lg">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center py-4">
-          <Link href="/" className="text-xl font-bold text-gray-800">
-            MySpace
-          </Link>
-          
-          <div className="flex space-x-6">
-            <Link 
-              href="/today" 
-              className={`px-3 py-2 rounded-md ${
-                isActive('/today') || pathname.match(/\/\d{4}\/\d{1,2}\/\d{1,2}$/)
-                  ? 'bg-blue-500 text-white' 
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
+    <div className="absolute w-full" style={{ bottom: '40px' }}>
+      {children}
+
+      <div className="mt-4 flex justify-around items-center">
+        <div className="flex justify-start">
+          {pages.map((page, index) => (
+            <div 
+              key={page.path}
+              className={`text-xs ${index !== pages.length - 1 ? 'mr-6' : ''}`}
             >
-              Today
-            </Link>
-            
-            <Link 
-              href="/month" 
-              className={`px-3 py-2 rounded-md ${
-                pathname.includes('/projects') || pathname.includes('/calendar')
-                  ? 'bg-blue-500 text-white' 
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Month
-            </Link>
-          </div>
+              <Link 
+                href={`/${page.path}`} 
+                className={`hover:text-gray-100 ${
+                  page.path === active ? 'text-gray-200' : 'text-gray-600'
+                }`}
+              >
+                {page.caption}
+              </Link>
+            </div>
+          ))}
         </div>
       </div>
-    </nav>
+    </div>
   )
 }

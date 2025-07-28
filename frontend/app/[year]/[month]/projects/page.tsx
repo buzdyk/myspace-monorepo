@@ -2,21 +2,34 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import Navigation from '@/components/Navigation'
+import EmptyPlaceholder from '@/components/projects/EmptyPlaceholder'
+import Overview from '@/components/projects/Overview'
 import api from '@/lib/api'
 
 interface Project {
   source: string
   project_id: string
-  project_title: string
+  projectTitle: string
   seconds: number
   hours: number
 }
 
 interface ProjectsData {
-  year: number
-  month: number
   projects: Project[]
-  total_hours: number
+  monthHours: number
+  projectedIncome: number
+  projectedHours: number
+  dayOfMonth: string
+  weekdays: number
+  weekends: number
+  links: {
+    caption: string
+    thisLink: string
+    prevLink: string
+    nextLink: string
+  }
+  hourlyRate: number
 }
 
 export default function ProjectsPage() {
@@ -43,78 +56,65 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading...</div>
+      <div className="h-screen flex justify-center items-center font-mono">
+        <div className="text-lg selection:bg-red-700 selection:text-white">Loading...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-red-600">{error}</div>
+      <div className="h-screen flex justify-center items-center font-mono">
+        <div className="text-lg selection:bg-red-700 selection:text-white">{error}</div>
       </div>
     )
   }
 
   if (!data) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">No data available</div>
+      <div className="h-screen flex justify-center items-center font-mono">
+        <div className="text-lg selection:bg-red-700 selection:text-white">No data available</div>
       </div>
     )
   }
 
-  const monthName = new Date(data.year, data.month - 1).toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  })
-
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Projects - {monthName}</h1>
-
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Monthly Overview</h2>
-        <div className="text-3xl font-bold text-blue-600">
-          {data.total_hours.toFixed(2)} total hours
+    <div className="h-screen flex justify-center items-center font-mono">
+      <div className="text-lg selection:bg-red-700 selection:text-white">
+        <div className="flex justify-start text-xs -ml-1">
+          <a href={`${data.links.thisLink}/projects`} className="block pl-1 pr-5 py-1 mr-4 bg-gray-700 text-center text-gray-400">
+            Projects
+          </a>
+          <a href={`${data.links.thisLink}/calendar`} className="block pl-1 pr-5 py-1 ml-4 hover:bg-gray-700 text-center text-gray-400">
+            Calendar
+          </a>
         </div>
-      </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Project Breakdown</h2>
-          
-          {data.projects.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No projects found for this month
-            </div>
+        <div className="mt-10 mb-20">
+          {data.monthHours ? (
+            <Overview
+              projects={data.projects}
+              monthHours={data.monthHours}
+              projectedIncome={data.projectedIncome}
+              projectedHours={data.projectedHours}
+              hourlyRate={data.hourlyRate}
+            />
           ) : (
-            <div className="space-y-4">
-              {data.projects.map((project, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg">{project.project_title}</h3>
-                      <p className="text-sm text-gray-600">
-                        Source: {project.source} | ID: {project.project_id}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {project.hours.toFixed(2)} hrs
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {project.seconds} seconds
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <EmptyPlaceholder />
           )}
         </div>
       </div>
+
+      <Navigation active="month">
+        <div className="mb-6 text-base flex justify-around">
+          <div className="flex justify-around">
+            <span className="block text-gray-400">{data.links.caption}</span>
+
+            <a href={`${data.links.prevLink}/projects`} className="ml-3 text-gray-600 hover:text-gray-200">&lt;</a>
+            <a href={`${data.links.nextLink}/projects`} className="ml-1 text-gray-600 hover:text-gray-200">&gt;</a>
+          </div>
+        </div>
+      </Navigation>
     </div>
   )
 }

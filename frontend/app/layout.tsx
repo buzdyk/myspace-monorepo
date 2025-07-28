@@ -14,11 +14,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
+      <body className="bg-gray-800 text-gray-200">
+        {children}
       </body>
     </html>
   )

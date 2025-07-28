@@ -22,7 +22,8 @@ type Config struct {
 	}
 	
 	Mayven struct {
-		Auth string
+		Auth   string
+		ApiURL string
 	}
 }
 
@@ -39,6 +40,7 @@ func Load() *Config {
 	
 	cfg.Everhour.Token = getEnv("EVERHOUR_TOKEN", "")
 	cfg.Mayven.Auth = getEnv("MAYVEN_AUTH", "")
+	cfg.Mayven.ApiURL = getEnv("MAYVEN_API_URL", "https://api.mayven.io")
 	
 	return cfg
 }

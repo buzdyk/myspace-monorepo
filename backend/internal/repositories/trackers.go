@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"myspace/backend/internal/config"
 	"myspace/backend/internal/interfaces"
 	"myspace/backend/internal/trackers"
@@ -24,7 +25,10 @@ func NewTrackersRepository(cfg *config.Config) *TrackersRepository {
 
 func (tr *TrackersRepository) hydrate() {
 	if tr.config.Mayven.Auth != "" {
+		fmt.Printf("Adding Mayven tracker with auth: %s...\n", tr.config.Mayven.Auth[:50])
 		tr.addTracker(trackers.NewMayven(tr.config))
+	} else {
+		fmt.Println("No Mayven auth found, skipping Mayven tracker")
 	}
 	
 	if tr.config.Everhour.Token != "" {
@@ -34,6 +38,8 @@ func (tr *TrackersRepository) hydrate() {
 	if tr.config.Clockify.Token != "" {
 		tr.addTracker(trackers.NewClockify(tr.config))
 	}
+	
+	fmt.Printf("Total trackers initialized: %d\n", len(tr.trackers))
 }
 
 func (tr *TrackersRepository) addTracker(tracker interfaces.TimeTracker) {
