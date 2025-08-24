@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"math"
 	"myspace/backend/internal/repositories"
 	"net/http"
 	"strconv"
@@ -85,9 +86,9 @@ func (h *TodayHandler) Index(c *gin.Context) {
 	dailyGoal := 8.0
 	monthlyGoal := 160.0
 
-	// Calculate percentages
-	todayPercent := int((todayHours / dailyGoal) * 100)
-	monthPercent := (monthHours / monthlyGoal) * 100
+	// Calculate percentages (rounded to 2 decimal places)
+	todayPercent := math.Round((todayHours/dailyGoal)*10000) / 100
+	monthPercent := math.Round((monthHours/monthlyGoal)*10000) / 100
 
 	// Calculate pace (simplified)
 	daysInMonth := float64(time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC).Day())

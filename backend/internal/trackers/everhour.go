@@ -131,7 +131,7 @@ func (e *Everhour) GetRunningSeconds() (int, error) {
 	return timer.Duration, nil
 }
 
-func (e *Everhour) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (e *Everhour) GetMonthIntervals(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -157,7 +157,7 @@ func (e *Everhour) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes,
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	for _, entry := range entries {
 		createdAt, err := time.Parse(time.RFC3339, entry.CreatedAt)
 		if err != nil {
@@ -176,7 +176,7 @@ func (e *Everhour) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes,
 	return projectTimes, nil
 }
 
-func (e *Everhour) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (e *Everhour) GetMonthlyTimeByProject(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -185,7 +185,7 @@ func (e *Everhour) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.Project
 		return nil, err
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	if seconds > 0 {
 		projectName, _ := e.getProjectName("one-and-only")
 		projectTimes.Add(types.ProjectTime{

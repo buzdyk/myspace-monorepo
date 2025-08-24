@@ -104,7 +104,7 @@ func (c *Clockify) GetRunningSeconds() (int, error) {
 	return 0, nil
 }
 
-func (c *Clockify) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (c *Clockify) GetMonthlyTimeByProject(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -113,7 +113,7 @@ func (c *Clockify) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.Project
 		return nil, err
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	projectTimes.Add(types.ProjectTime{
 		Source:       "clockify",
 		ProjectID:    "x",
@@ -124,7 +124,7 @@ func (c *Clockify) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.Project
 	return projectTimes, nil
 }
 
-func (c *Clockify) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (c *Clockify) GetMonthIntervals(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -150,7 +150,7 @@ func (c *Clockify) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes,
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	for _, entry := range entries {
 		seconds, err := c.getSecondsForTimeEntry(entry)
 		if err != nil {

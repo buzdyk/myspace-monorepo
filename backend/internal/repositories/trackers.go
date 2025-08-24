@@ -74,8 +74,8 @@ func (tr *TrackersRepository) RunningHours() (float64, error) {
 	return float64(totalSeconds) / 3600, nil
 }
 
-func (tr *TrackersRepository) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.ProjectTimes, error) {
-	projectTimes := types.NewProjectTimes()
+func (tr *TrackersRepository) GetMonthlyTimeByProject(dayOfMonth time.Time) (types.ProjectTimeList, error) {
+	var projectTimes types.ProjectTimeList
 	
 	for _, tracker := range tr.trackers {
 		times, err := tracker.GetMonthlyTimeByProject(dayOfMonth)
@@ -89,7 +89,7 @@ func (tr *TrackersRepository) GetMonthlyTimeByProject(dayOfMonth time.Time) (*ty
 }
 
 func (tr *TrackersRepository) GetDailyHours(dayOfMonth time.Time) (map[string]*float64, error) {
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	
 	for _, tracker := range tr.trackers {
 		times, err := tracker.GetMonthIntervals(dayOfMonth)

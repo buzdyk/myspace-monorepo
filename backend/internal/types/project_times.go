@@ -5,71 +5,32 @@ import (
 	"time"
 )
 
-type ProjectTimes struct {
-	items        []ProjectTime
-	currentIndex int
-}
+// ProjectTimeList is a slice of ProjectTime, using idiomatic Go patterns
+type ProjectTimeList []ProjectTime
 
-func NewProjectTimes() *ProjectTimes {
-	return &ProjectTimes{
-		items:        make([]ProjectTime, 0),
-		currentIndex: 0,
-	}
-}
-
-func (pts *ProjectTimes) Add(projectTime ProjectTime) *ProjectTimes {
-	pts.items = append(pts.items, projectTime)
-	return pts
-}
-
-func (pts *ProjectTimes) Merge(other *ProjectTimes) *ProjectTimes {
-	other.Rewind()
-	for {
-		item := other.Next()
-		if item == nil {
-			break
-		}
-		pts.Add(*item)
-	}
-	return pts
-}
-
-func (pts *ProjectTimes) Rewind() {
-	pts.currentIndex = 0
-}
-
-func (pts *ProjectTimes) Next() *ProjectTime {
-	if pts.currentIndex >= len(pts.items) {
-		return nil
-	}
-	item := &pts.items[pts.currentIndex]
-	pts.currentIndex++
-	return item
-}
-
-func (pts *ProjectTimes) Count() int {
-	return len(pts.items)
-}
-
-func (pts *ProjectTimes) GetHours() float64 {
+// GetHours returns the total hours for all project times
+func (ptl ProjectTimeList) GetHours() float64 {
 	total := 0.0
-	for _, item := range pts.items {
+	for _, item := range ptl {
 		total += item.GetHours()
 	}
 	return math.Round(total*100) / 100
 }
 
-func (pts *ProjectTimes) GetDailyHours(dayOfMonth time.Time) map[string]*float64 {
+// GetDailyHours returns a map of daily hours for the given month
+func (ptl ProjectTimeList) GetDailyHours(dayOfMonth time.Time) map[string]*float64 {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
-	
+
 	days := make(map[string]*float64)
-	
+
+	// Initialize all days of the month with nil
 	for d := som; !d.After(eom); d = d.AddDate(0, 0, 1) {
 		days[d.Format("2006-01-02")] = nil
 	}
-	
-	for _, item := range pts.items {
+
+	// Sum up hours for each day
+	for _, item := range ptl {
 		if item.Datetime != nil {
 			day := item.Datetime.Format("2006-01-02")
 			if days[day] == nil {
@@ -79,14 +40,25 @@ func (pts *ProjectTimes) GetDailyHours(dayOfMonth time.Time) map[string]*float64
 			*days[day] += item.GetHours()
 		}
 	}
-	
+
 	return days
 }
 
-func (pts *ProjectTimes) ToArray() []map[string]interface{} {
-	result := make([]map[string]interface{}, len(pts.items))
-	for i, item := range pts.items {
+// ToArray converts the list to an array of maps (for JSON serialization)
+func (ptl ProjectTimeList) ToArray() []map[string]interface{} {
+	result := make([]map[string]interface{}, len(ptl))
+	for i, item := range ptl {
 		result[i] = item.ToMap()
 	}
 	return result
+}
+
+// Merge appends all items from another ProjectTimeList
+func (ptl *ProjectTimeList) Merge(other ProjectTimeList) {
+	*ptl = append(*ptl, other...)
+}
+
+// Add appends a ProjectTime to the list
+func (ptl *ProjectTimeList) Add(projectTime ProjectTime) {
+	*ptl = append(*ptl, projectTime)
 }

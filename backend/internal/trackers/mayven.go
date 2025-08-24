@@ -235,7 +235,7 @@ func (m *Mayven) GetRunningSeconds() (int, error) {
 	return int(time.Since(startedAt).Seconds()), nil
 }
 
-func (m *Mayven) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (m *Mayven) GetMonthIntervals(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -261,7 +261,7 @@ func (m *Mayven) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes, e
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	for _, item := range stats.Data.ChartData {
 		date, err := time.Parse("2006-01-02", item.Date)
 		if err != nil {
@@ -280,7 +280,7 @@ func (m *Mayven) GetMonthIntervals(dayOfMonth time.Time) (*types.ProjectTimes, e
 	return projectTimes, nil
 }
 
-func (m *Mayven) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.ProjectTimes, error) {
+func (m *Mayven) GetMonthlyTimeByProject(dayOfMonth time.Time) (types.ProjectTimeList, error) {
 	som := time.Date(dayOfMonth.Year(), dayOfMonth.Month(), 1, 0, 0, 0, 0, dayOfMonth.Location())
 	eom := som.AddDate(0, 1, -1)
 	
@@ -310,7 +310,7 @@ func (m *Mayven) GetMonthlyTimeByProject(dayOfMonth time.Time) (*types.ProjectTi
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 	
-	projectTimes := types.NewProjectTimes()
+	var projectTimes types.ProjectTimeList
 	for _, item := range stats.Data.AggregatedIntervals {
 		projectTimes.Add(types.ProjectTime{
 			Source:       "mayven",
